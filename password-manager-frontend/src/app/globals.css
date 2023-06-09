@@ -1,0 +1,129 @@
+main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  background: #0e101c;
+  /* overflow-y: scroll; */
+}
+body {
+  margin: 0;
+}
+.form {
+  border: 3px solid;
+  border-radius: 10px;
+  color: white;
+  padding: 10px 20px;
+  width: 300px;
+}
+
+button[type='button'] {
+  background: black;
+  border: 1px solid white;
+}
+
+p {
+  color: #bf1650;
+  text-align: center;
+}
+
+input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  border-radius: 4px;
+  border: 1px solid white;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.materialUIInput {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  border-radius: 4px;
+  background-color: white;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+label {
+  line-height: 2;
+  text-align: left;
+  display: block;
+  margin-bottom: 13px;
+  margin-top: 20px;
+
+  font-size: 14px;
+  font-weight: 200;
+}
+
+button,
+input[type='submit'] {
+  background: #ec5990;
+  color: white;
+  text-transform: uppercase;
+  border: none;
+  margin-top: 40px;
+  padding: 20px;
+  font-size: 16px;
+  font-weight: 100;
+  letter-spacing: 10px;
+}
+
+button {
+  display: block;
+  appearance: none;
+  border-radius: 4px;
+  width: 100%;
+  cursor: pointer;
+}
+
+input[type='submit']:hover {
+  background: #bf1650;
+}
+
+input[type='button']:active,
+input[type='submit']:active {
+  transition: 0.3s all;
+  transform: translateY(3px);
+  border: 1px solid transparent;
+  opacity: 0.8;
+}
+
+input:disabled {
+  opacity: 0.4;
+}
+
+input[type='button']:hover {
+  transition: 0.3s all;
+}
+
+input[type='button'],
+input[type='submit'] {
+  -webkit-appearance: none;
+}
+.vault {
+  display: flex;
+  /* border: 1px solid black; */
+  padding: 10px;
+}
+.button2 {
+  background: #ec5990;
+  color: white;
+  text-transform: uppercase;
+  border: none;
+  margin-top: 40px;
+  padding: 10px 10px;
+  font-size: 16px;
+  font-weight: 100;
+  /* letter-spacing: 10px; */
+  display: block;
+  appearance: none;
+  border-radius: 4px;
+  /* width: 100%; */
+  cursor: pointer;
+}
