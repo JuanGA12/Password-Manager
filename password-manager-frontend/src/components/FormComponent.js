@@ -1,14 +1,29 @@
 import { useForm } from 'react-hook-form';
 import Cookies from 'js-cookie';
+import { hashPassword } from '@/utils/crypto';
 
 const FormComponent = ({ state, setState }) => {
   const { register, handleSubmit } = useForm();
   const onSubmit = async (data) => {
     try {
       const route = state == 'Register' ? 'createuser' : 'loginuser';
+      let body = {};
+      if (state == 'Register') {
+        body = {
+          email: data.email,
+          phone: data.phone,
+          password: hashPassword(data.password),
+        };
+      } else if (state == 'Login') {
+        body = {
+          email: data.email,
+          password: hashPassword(data.password),
+        };
+      }
+
       let response = await fetch(`http://localhost:4000/${route}`, {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: JSON.stringify(body),
       });
       if (!response.ok) {
         throw new Error('Network response was not OK');
@@ -21,6 +36,7 @@ const FormComponent = ({ state, setState }) => {
           user_id: response.user_id,
           user_email: response.user_email,
           user_pass: response.user_pass,
+          user_vault: response.user_vault,
         }),
         { expires: 7 }
       );
@@ -28,6 +44,7 @@ const FormComponent = ({ state, setState }) => {
         'v',
         JSON.stringify({
           vault_data: response.vault_data,
+          vault_nonce: response.vault_nonce,
         }),
         { expires: 7 }
       );

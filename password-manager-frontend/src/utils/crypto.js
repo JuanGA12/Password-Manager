@@ -1,5 +1,8 @@
 import pbkdf2 from 'crypto-js/pbkdf2';
 import lib from 'crypto-js/lib-typedarrays';
+import SHA256 from 'crypto-js/sha256';
+
+export const hashPassword = (password) => SHA256(password).toString();
 export const generateMasterPassword = (email, password) => {
   const salt = lib.random(128 / 8);
   return pbkdf2(`${email}:${password}`, salt, {
@@ -69,6 +72,7 @@ export const encryptVault = async (plaintext, master_password) => {
 
 export const decryptVault = async (ciphertext, key, nonce) => {
   // import key from pbkdf2 password
+  console.table(ciphertext, key, nonce);
   const master_password_key = await importKey(key);
   // base64 to buffer
   const chipertextBuffer = base64ToArrayBuffer(ciphertext);
@@ -84,5 +88,5 @@ export const decryptVault = async (ciphertext, key, nonce) => {
   );
   // decode
   const text = new TextDecoder().decode(plaintext);
-  console.log('decrpy', text);
+  return text;
 };

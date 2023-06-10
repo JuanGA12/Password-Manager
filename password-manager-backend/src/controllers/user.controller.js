@@ -17,6 +17,8 @@ const createUser = async (request, reply) => {
         user_email: user.email,
         user_pass: user.password,
         vault_data: vault.data,
+        user_vault: user.hasVault,
+        vault_nonce: vault.nonce,
       });
     }
     logger.error('error creating user');
@@ -52,6 +54,8 @@ const loginUser = async (request, reply) => {
       user_email: user.email,
       user_pass: user.password,
       vault_data: vault.data,
+      user_vault: user.hasVault,
+      vault_nonce: vault.nonce,
     });
   } catch (err) {
     logger.error(err, 'error login user');
