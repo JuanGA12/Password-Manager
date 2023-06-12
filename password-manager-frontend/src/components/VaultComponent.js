@@ -13,28 +13,44 @@ const VaultComponent = ({ vault, user }) => {
   const [creatingVault, setCreatingVault] = useState();
   const [loader, setLoader] = useState(true);
   const [showPromp, setShowPromp] = useState(true);
+  // const [master_password, setMasterPassword] = useState();
 
   useEffect(() => {
-    if (user) setCreatingVault(user.user_vault);
+    if (user) {
+      setCreatingVault(user.user_vault);
+      if (!user.user_vault) {
+        setValidMP(generateMasterPassword(user.user_email, user.user_pass));
+      }
+    }
   }, [user]);
 
   const onSubmit = async (data) => {
     try {
-      const master_password = generateMasterPassword(
-        user.email,
-        user.user_pass
-      );
-      console.log('mp', master_password);
-      const { encrypted, nonce } = await encryptVault(
+      // const master_password = generateMasterPassword(
+      //   user.email,
+      //   user.user_pass
+      // );
+      let nonce_ = '';
+      const vault_ = JSON.parse(Cookies.get('v'));
+      if (vault_) {
+        nonce_ = vault_.vault_nonce;
+      } else nonce_ = crypto.getRandomValues(new Uint8Array(12));
+      const { encrypted, nonce, mac } = await encryptVault(
         JSON.stringify(data.vault),
-        master_password
+        // master_password
+        validMP,
+        nonce_
       );
+      // const plaintext = await decryptVault(encrypted, validMP, nonce);
+
+      console.log('mp', validMP);
       let response = await fetch('http://localhost:4000/updatevault', {
         method: 'PUT',
         body: JSON.stringify({
           data: encrypted,
           user_id: JSON.parse(Cookies.get('u')).user_id,
           nonce: nonce,
+          mac: mac,
         }),
       });
       if (!response.ok) {
@@ -141,6 +157,7 @@ const VaultComponent = ({ vault, user }) => {
                     onChange={(e) => handleInputChange(e)}
                   ></input>
                   <div
+                    id="EnterPass"
                     style={{ cursor: 'pointer' }}
                     onClick={() => checkDecrypt()}
                   >

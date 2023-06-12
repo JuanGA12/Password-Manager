@@ -2,7 +2,6 @@ import pbkdf2 from 'crypto-js/pbkdf2';
 import lib from 'crypto-js/lib-typedarrays';
 import SHA256 from 'crypto-js/sha256';
 
-export const hashPassword = (password) => SHA256(password).toString();
 export const generateMasterPassword = (email, password) => {
   const salt = lib.random(128 / 8);
   return pbkdf2(`${email}:${password}`, salt, {
@@ -37,11 +36,12 @@ const base64ToArrayBuffer = (base64) => {
   }
   return bytes.buffer;
 };
-export const encryptVault = async (plaintext, master_password) => {
+export const encryptVault = async (plaintext, master_password, nonce) => {
   // import key from pbkdf2 password
   const master_password_key = await importKey(master_password);
   // create nonce
-  const nonce = crypto.getRandomValues(new Uint8Array(12));
+  // const nonce = crypto.getRandomValues(new Uint8Array(12)); //fijar nonce y si funciona
+  nonce = base64ToArrayBuffer(nonce);
   // encode plaintext
   const plaintextEncoded = new TextEncoder().encode(plaintext);
   // encrypt
@@ -53,26 +53,27 @@ export const encryptVault = async (plaintext, master_password) => {
     master_password_key,
     plaintextEncoded
   );
-  //   const [value, auth_tag] = [
-  //     encrypted.slice(0, encrypted.byteLength - 16),
-  //     encrypted.slice(encrypted.byteLength - 16),
-  //   ];
-  //   const decoder = new TextDecoder();
-  //   const text = decoder.decode(value);
-  //   const text2 = decoder.decode(auth_tag);
-  //   //   console.log(text);
-  //   console.log(auth_tag);
+  const [value, auth_tag] = [
+    encrypted.slice(0, encrypted.byteLength - 16),
+    encrypted.slice(encrypted.byteLength - 16),
+  ];
+  console.log('cypher', arrayBufferToBase64(value));
+  console.log('mac', arrayBufferToBase64(auth_tag));
 
   // Buffer to base 64
   const binary = arrayBufferToBase64(encrypted);
-  console.log('bin', binary);
-  console.log('non', arrayBufferToBase64(nonce));
-  return { encrypted: binary, nonce: arrayBufferToBase64(nonce) };
+  // console.log('bin', binary);
+  // console.log('non', arrayBufferToBase64(nonce));
+  return {
+    encrypted: binary,
+    nonce: arrayBufferToBase64(nonce),
+    mac: arrayBufferToBase64(auth_tag),
+  };
 };
 
 export const decryptVault = async (ciphertext, key, nonce) => {
   // import key from pbkdf2 password
-  console.table(ciphertext, key, nonce);
+  // console.log(ciphertext, key, nonce);
   const master_password_key = await importKey(key);
   // base64 to buffer
   const chipertextBuffer = base64ToArrayBuffer(ciphertext);

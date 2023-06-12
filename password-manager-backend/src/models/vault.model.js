@@ -8,6 +8,7 @@ const vaultSchema = new Schema(
       ref: 'User',
     },
     nonce: String,
+    mac: { type: String, default: '' },
   },
   {
     timestamps: true,

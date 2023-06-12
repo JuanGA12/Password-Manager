@@ -111,6 +111,23 @@ input[type='submit'] {
   /* border: 1px solid black; */
   padding: 10px;
 }
+#EnterPass {
+  background: #ec5990;
+  color: white;
+  text-transform: uppercase;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 10px;
+  font-size: 16px;
+  font-weight: 100;
+  /* letter-spacing: 10px; */
+  appearance: none;
+  /* border-radius: 4px; */
+  /* width: 100%; */
+  cursor: pointer;
+}
 .button2 {
   background: #ec5990;
   color: white;

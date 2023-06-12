@@ -1,10 +1,13 @@
 const User = require('../models/user.model.js');
 const vaultControllers = require('./vault.controller');
 const logger = require('../utils/logger.js');
+const argon2 = require('argon2');
 
 const createUser = async (request, reply) => {
   try {
-    const user = new User(JSON.parse(request.body));
+    const { email, password, phone } = JSON.parse(request.body);
+    const passHashed = await argon2.hash(password);
+    const user = new User({ email, password: passHashed, phone });
     await user.save();
     const vault = await vaultControllers.createVault({
       data: '',
@@ -19,6 +22,7 @@ const createUser = async (request, reply) => {
         vault_data: vault.data,
         user_vault: user.hasVault,
         vault_nonce: vault.nonce,
+        vault_mac: vault.mac,
       });
     }
     logger.error('error creating user');
@@ -31,14 +35,16 @@ const createUser = async (request, reply) => {
 
 const loginUser = async (request, reply) => {
   try {
-    const { email } = JSON.parse(request.body);
+    const { email, password } = JSON.parse(request.body);
     const user = await User.findOne({ email: email });
-    if (!user) {
+    const verified = await argon2.verify(user.password, password);
+    if (!user || !verified) {
       logger.error('error login user');
       return reply.status(401).send({
         message: 'Invalid email or password',
       });
     }
+
     const vault = await vaultControllers.findVault({
       user_id: user._id,
     });
@@ -56,6 +62,7 @@ const loginUser = async (request, reply) => {
       vault_data: vault.data,
       user_vault: user.hasVault,
       vault_nonce: vault.nonce,
+      vault_mac: vault.mac,
     });
   } catch (err) {
     logger.error(err, 'error login user');

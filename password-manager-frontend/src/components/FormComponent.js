@@ -1,6 +1,5 @@
 import { useForm } from 'react-hook-form';
 import Cookies from 'js-cookie';
-import { hashPassword } from '@/utils/crypto';
 
 const FormComponent = ({ state, setState }) => {
   const { register, handleSubmit } = useForm();
@@ -12,12 +11,12 @@ const FormComponent = ({ state, setState }) => {
         body = {
           email: data.email,
           phone: data.phone,
-          password: hashPassword(data.password),
+          password: data.password,
         };
       } else if (state == 'Login') {
         body = {
           email: data.email,
-          password: hashPassword(data.password),
+          password: data.password,
         };
       }
 

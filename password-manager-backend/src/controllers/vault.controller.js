@@ -19,7 +19,7 @@ const updateVault = async (request, reply) => {
     console.log(body);
     await Vault.updateOne(
       { user: body.user_id },
-      { data: body.data, nonce: body.nonce }
+      { data: body.data, nonce: body.nonce, mac: body.mac }
     );
     await User.updateOne({ _id: body.user_id }, { hasVault: true });
     return reply.code(200).send({ message: 'Vault updated' });
