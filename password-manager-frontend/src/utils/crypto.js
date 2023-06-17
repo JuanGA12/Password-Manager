@@ -17,7 +17,7 @@ const importKey = async (master_password) => {
     ['encrypt', 'decrypt']
   );
 };
-const arrayBufferToBase64 = (buffer) => {
+export const arrayBufferToBase64 = (buffer) => {
   let binary = '';
   const bytes = new Uint8Array(buffer);
   const len = bytes.byteLength;
@@ -27,7 +27,7 @@ const arrayBufferToBase64 = (buffer) => {
   return window.btoa(binary);
 };
 
-const base64ToArrayBuffer = (base64) => {
+export const base64ToArrayBuffer = (base64) => {
   const binary_string = window.atob(base64);
   const len = binary_string.length;
   let bytes = new Uint8Array(len);
@@ -39,6 +39,7 @@ const base64ToArrayBuffer = (base64) => {
 export const encryptVault = async (plaintext, master_password, nonce) => {
   // import key from pbkdf2 password
   const master_password_key = await importKey(master_password);
+  console.log('mpk', master_password_key);
   // create nonce
   // const nonce = crypto.getRandomValues(new Uint8Array(12)); //fijar nonce y si funciona
   nonce = base64ToArrayBuffer(nonce);

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import Cookies from 'js-cookie';
 import {
+  arrayBufferToBase64,
   decryptVault,
   encryptVault,
   generateMasterPassword,
@@ -23,6 +24,9 @@ const VaultComponent = ({ vault, user }) => {
       }
     }
   }, [user]);
+  useEffect(() => {
+    console.log(vault);
+  }, [vault]);
 
   const onSubmit = async (data) => {
     try {
@@ -32,18 +36,24 @@ const VaultComponent = ({ vault, user }) => {
       // );
       let nonce_ = '';
       const vault_ = JSON.parse(Cookies.get('v'));
-      if (vault_) {
+
+      if (vault_.vault_nonce != '') {
         nonce_ = vault_.vault_nonce;
-      } else nonce_ = crypto.getRandomValues(new Uint8Array(12));
+      } else
+        nonce_ = arrayBufferToBase64(
+          crypto.getRandomValues(new Uint8Array(12))
+        );
+      // console.log('nonce', nonce_);
+      // console.log('validMP', validMP);
+
       const { encrypted, nonce, mac } = await encryptVault(
         JSON.stringify(data.vault),
         // master_password
         validMP,
         nonce_
       );
-      // const plaintext = await decryptVault(encrypted, validMP, nonce);
 
-      console.log('mp', validMP);
+      console.log('mp', validMP, 'nonce', nonce_);
       let response = await fetch('http://localhost:4000/updatevault', {
         method: 'PUT',
         body: JSON.stringify({
@@ -78,6 +88,7 @@ const VaultComponent = ({ vault, user }) => {
         }),
         { expires: 7 }
       );
+      //se creo vault
     } catch (error) {
       console.error(
         'There has been a problem with your fetch operation:',
@@ -107,6 +118,10 @@ const VaultComponent = ({ vault, user }) => {
   const checkDecrypt = async () => {
     try {
       const vault_ = JSON.parse(Cookies.get('v'));
+      console.log('VD', vault_.vault_data);
+      console.log('VMP', validMP);
+      console.log('Nonce', vault_.vault_nonce);
+
       const plaintext = await decryptVault(
         vault_.vault_data,
         validMP,
@@ -122,7 +137,7 @@ const VaultComponent = ({ vault, user }) => {
       });
       setShowPromp(false);
     } catch (error) {
-      console.log('Wrong master password');
+      console.log('Wrong master password', error);
     }
   };
   return (
@@ -150,7 +165,7 @@ const VaultComponent = ({ vault, user }) => {
           )}
           {creatingVault && (
             <div>
-              {showPromp ? (
+              {showPromp && vault.length > 0 ? (
                 <div style={{ backgroundColor: 'white', width: '400px' }}>
                   <input
                     placeholder="Enter your master password"
