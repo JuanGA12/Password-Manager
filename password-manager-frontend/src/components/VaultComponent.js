@@ -240,7 +240,7 @@ const VaultComponent = ({ vault, user }) => {
                           />
                         </div>
                         <div className="button2" onClick={() => remove(index)}>
-                          -
+                          Delete
                         </div>
                       </div>
                     );
@@ -259,8 +259,18 @@ const VaultComponent = ({ vault, user }) => {
                   <div className="logout-container">
                     <button onClick={() => handleLogout()}>Log Out</button>
                   </div>
+
+                  <div className="username-container">
+                  {user && (
+                    <span className="username">
+                      Welcome, {user.user_email}!
+                    </span>
+                  )}
+                  </div>
                   
                 </form>
+
+               
               )}
             </div>
           )}

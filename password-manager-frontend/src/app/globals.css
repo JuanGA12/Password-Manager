@@ -5,7 +5,7 @@ main {
   width: 100vw;
   height: 100vh;
   background: #0e101c;
-  /* overflow-y: scroll; */
+  /*overflow-y: scroll;*/ 
 }
 body {
   margin: 0;
@@ -16,7 +16,38 @@ body {
   color: white;
   padding: 10px 20px;
   width: 300px;
+  overflow: auto;
+  max-height: 80vh;
+  scrollbar-width: thin; 
+  scrollbar-color: #ec5990 #0e101c; 
+
+  &::-webkit-scrollbar-track {
+    background: #0e101c;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #ec5990;
+    border-radius: 6px;
+    border: 3px solid #0e101c;
+
+  }
+
 }
+
+.form::-webkit-scrollbar {
+  width: 10px;
+}
+
+.form::-webkit-scrollbar-track {
+  background: #0e101c;
+}
+
+.form::-webkit-scrollbar-thumb {
+  background-color: #ec5990;
+  border-radius: 6px;
+  border: 3px solid #0e101c;
+}
+
 
 button[type='button'] {
   background: black;
@@ -106,6 +137,7 @@ input[type='button'],
 input[type='submit'] {
   -webkit-appearance: none;
 }
+
 .vault {
   display: flex;
   /* border: 1px solid black; */
@@ -122,12 +154,11 @@ input[type='submit'] {
   padding: 10px 10px;
   font-size: 16px;
   font-weight: 100;
-  /* letter-spacing: 10px; */
   appearance: none;
-  /* border-radius: 4px; */
-  /* width: 100%; */
   cursor: pointer;
 }
+
+
 .button2 {
   background: #ec5990;
   color: white;
@@ -137,11 +168,9 @@ input[type='submit'] {
   padding: 10px 10px;
   font-size: 16px;
   font-weight: 100;
-  /* letter-spacing: 10px; */
   display: block;
   appearance: none;
   border-radius: 4px;
-  /* width: 100%; */
   cursor: pointer;
 }
 
@@ -152,3 +181,59 @@ input[type='submit'] {
   padding: 10px;
 }
 
+.input-container {
+  display: flex;
+  align-items: center;
+}
+
+.input-field {
+  flex: 1;
+  padding-right: 30px; 
+}
+
+.input-icon {
+  margin-left: 10px; 
+}
+
+.color-picker-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 300px; 
+  margin: 0 auto; 
+}
+
+
+.username-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.username {
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+
+.custom-toast-close-button {
+  background-color: #fff;
+  color: #000;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+}
+
+
+.help-icon-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+}
+
+.help-icon {
+  z-index: 9999;
+}
