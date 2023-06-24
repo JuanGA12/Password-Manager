@@ -1,0 +1,10 @@
+{
+    "service": "gmail",
+    "auth": {
+      "type": "OAuth2",
+      "user": "darklay77@gmail.com",
+      "clientId": "636422211002-97a6aabojt60gq2onlkgbr53vvh25n69.apps.googleusercontent.com",
+      "clientSecret": "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",
+      "refreshToken": "1//04uOZo42q878ICgYIARAAGAQSNwF-L9IrUvC7wh5XC96Xqq08ZB9cL0dhqrz5DicxXRN1cn4JkPAVg2TAGXmonGT0NKkI2nbTzyw"
+    }
+  }

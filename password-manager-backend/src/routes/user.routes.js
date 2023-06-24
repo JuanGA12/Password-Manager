@@ -10,5 +10,15 @@ const routes = [
     url: '/loginuser',
     handler: userControllers.loginUser,
   },
+  {
+    method: 'POST',
+    url: '/password-recovery',
+    handler: userControllers.sendPasswordRecoveryEmail,
+  },
+  {
+    method: 'POST',
+    url: '/obtain-code',
+    handler: userControllers.logicCode,
+  }
 ];
 module.exports = routes;

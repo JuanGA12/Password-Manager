@@ -5,12 +5,14 @@ import Cookies from 'js-cookie';
 import { BallTriangle } from 'react-loader-spinner';
 import VaultComponent from '@/components/VaultComponent';
 
+
 export default function Home() {
   const [state, setState] = useState('Login');
   const [loader, setLoader] = useState(true);
 
   const [user, setUser] = useState(null);
   const [vault, setVault] = useState([]);
+
   useEffect(() => {
     const user = Cookies.get('u');
     const vault = Cookies.get('v');
@@ -49,6 +51,7 @@ export default function Home() {
           {state == 'Vault' && <VaultComponent vault={vault} user={user} />}
         </div>
       )}
+      
     </main>
   );
 }

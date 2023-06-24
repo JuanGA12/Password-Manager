@@ -7,15 +7,16 @@
 
 
   //Iconos
-  import { FaEye, FaEyeSlash, FaEnvelope,FaPhone, FaQuestionCircle } from 'react-icons/fa';
+  import { FaEye, FaEyeSlash, FaEnvelope,FaPhone, FaQuestionCircle ,  FaUnlockAlt} from 'react-icons/fa';
+
 
   //Alertas
   import { ToastContainer, toast, Slide } from 'react-toastify';
   import 'react-toastify/dist/ReactToastify.css';
 
-  import 'react-tooltip/dist/react-tooltip.css'
-  import { Tooltip } from 'react-tooltip'
-
+  import 'react-tooltip/dist/react-tooltip.css';
+  import { Tooltip } from 'react-tooltip';
+  import { useRouter} from 'next/navigation'
 
   const FormComponent = ({ state, setState }) => {
     const { register, handleSubmit } = useForm();
@@ -34,7 +35,72 @@
     const [isPasswordEmpty, setIsPasswordEmpty] = useState(true);
 
     const [isMasterPasswordEmpty, setIsMasterPasswordEmpty] = useState(true);
-  
+
+    const [showPasswordRecovery, setShowPasswordRecovery] = useState(false);
+
+    const [recoveryEmail, setRecoveryEmail] = useState('');
+
+
+    const router = useRouter();
+
+    const handlePasswordRecoveryClick = () => {
+      setShowPasswordRecovery(true);
+    };
+
+    const handlePasswordRecoveryClose = () => {
+      setShowPasswordRecovery(false);
+    };
+
+    const handlePasswordRecoverySubmit = async (data) => {
+      try {
+
+        let body = {};
+        body = {
+            email: data.email,
+          };
+        
+        console.log(body)
+
+        const response = await fetch(`http://localhost:4000/password-recovery`, {
+          method: 'POST',
+          body: JSON.stringify(body),
+          headers: {
+            'Content-Type': 'application/json'
+        }
+        });
+        
+        console.log(response)
+        
+        
+        const responseData = await response.json();
+        console.log(responseData);
+        
+    
+        if (!response.ok) {
+          throw new Error('Network response was not OK');
+        }
+
+            
+        // Restablecer el valor del email en el estado
+        //setRecoveryEmail('');
+    
+        await toast.success('Se ha enviado un correo electrónico de recuperación de contraseña.', {
+          autoClose: 3000,
+        });
+        // llevar al coded-password-recovery
+        router.push(`/code-password-recovery?email=${data.email}`);
+
+        //location.reload();
+      } catch (error) {
+        //console.error('There has been a problem with the password recovery:', error);
+    
+        toast.error('Se ha producido un error en la recuperación de contraseña.', {
+          autoClose: 3000,
+        });
+      }
+    };
+    
+
     const handlePhoneKeyPress = (e) => {
       const key = e.key;
       if (!/^[0-9]+$/.test(key)) {
@@ -138,7 +204,7 @@
         );
 
         toast.error('Se ha producido un error.', {
-          autoClose: 3000, // Cerrar automáticamente después de 3 segundos
+          autoClose: 3000, 
         });
       }
     };
@@ -151,6 +217,10 @@
     );
     return (
       <div className="form">
+
+      {!showPasswordRecovery ? (
+        <>
+
         <h1>{state}</h1>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="input-container">
@@ -237,11 +307,9 @@
               <label>Color Picker</label>
               <SketchPicker
                 color={selectedColor}
-                //onChange={(color) => setSelectedColor(color.hex)}
+                onChange={(color) => setSelectedColor(color.hex)}
               />
             </div>
-
-            
           </>
 
           )}
@@ -251,13 +319,49 @@
           >
             {state == 'Register' ? 'Login?' : 'Register?'}
           </h3>
+          <h4 
+          className="forgot-password-link"
+          style={{ cursor: 'pointer' }}
+          onClick={handlePasswordRecoveryClick}> Forgot password?
+          
+          </h4>
           <input type="submit" />
+          
         </form>
-        <ToastContainer
-        transition={Slide}
-        closeButton={<CustomToastCloseButton />}
-      />
+        
+        </>
+      ) : (
+        <form onSubmit={handleSubmit(handlePasswordRecoverySubmit)}>
+          
+        <h1>Password Recovery</h1>
 
+        {showPasswordRecovery && (
+        <div className="password-recovery">
+        
+        <input 
+        placeholder="email" 
+        onChange={(e) => setRecoveryEmail(e.target.value)}
+         {...register('email', { required: true }) } 
+
+         />
+
+        <p>Please, enter your email address and we'll send you instructions on how to reset your password </p>
+        <button>Send</button>
+
+        
+      </div>
+      )}
+        </form>
+      )}
+        
+      
+        <ToastContainer
+        position="top-right"
+        transition={Slide}
+        draggable={false}
+        closeButton={<CustomToastCloseButton />}
+        toastClassName="custom-toast"
+      />
         <div className="help-icon-container">
           <FaQuestionCircle className="help-icon" />
         </div>

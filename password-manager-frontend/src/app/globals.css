@@ -9,7 +9,18 @@ main {
 }
 body {
   margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  background: #0e101c;
+  /*overflow-y: scroll;*/ 
 }
+
+
+
+
 .form {
   border: 3px solid;
   border-radius: 10px;
@@ -236,4 +247,19 @@ input[type='submit'] {
 
 .help-icon {
   z-index: 9999;
+}
+
+
+.forgot-password-link {
+  color: blue; 
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 14px; 
+  font-style: italic;
+
+}
+
+.custom-link {
+  text-decoration: none;
+  color: white; /* o cualquier otro color que desees */
 }

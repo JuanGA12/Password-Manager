@@ -6,6 +6,7 @@ const userSchema = new Schema(
     password: { type: String, required: true },
     phone: { type: String, unique: true, required: true },
     hasVault: { type: Boolean, default: false },
+    code: {type: String, default:false}
   },
   {
     timestamps: true,
