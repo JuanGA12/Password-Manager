@@ -30,7 +30,7 @@ const start = async () => {
     logger.info(`Server is ready at ${url}`);
     await db.connectDB();
   } catch (err) {
-    logger.error(e);
+    logger.error(err);
     process.exit(1);
   }
   const signals = ['SIGTERM', 'SIGINT'];

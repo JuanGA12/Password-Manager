@@ -9,9 +9,6 @@ import {
 } from '@/utils/crypto';
 import { BallTriangle } from 'react-loader-spinner';
 
-import {useNavigate} from 'react-router-dom';
-
-
 const VaultComponent = ({ vault, user }) => {
   const [validMP, setValidMP] = useState();
   const [creatingVault, setCreatingVault] = useState();
@@ -19,10 +16,7 @@ const VaultComponent = ({ vault, user }) => {
   const [showPromp, setShowPromp] = useState(true);
   // const [master_password, setMasterPassword] = useState();
 
-  //const navigate = useNavigate();
-
   const handleLogout = () => {
-
     // Eliminar las cookies de usuario y vault
     console.log('Se elimianron la cookies');
     Cookies.remove('u');
@@ -31,7 +25,6 @@ const VaultComponent = ({ vault, user }) => {
     // Recargar la página
     location.reload();
   };
-
 
   useEffect(() => {
     if (user) {
@@ -43,10 +36,7 @@ const VaultComponent = ({ vault, user }) => {
   }, [user]);
   useEffect(() => {
     console.log(vault);
-  }, [vault]);  
-
-
-
+  }, [vault]);
 
   const onSubmit = async (data) => {
     try {
@@ -261,16 +251,13 @@ const VaultComponent = ({ vault, user }) => {
                   </div>
 
                   <div className="username-container">
-                  {user && (
-                    <span className="username">
-                      Welcome, {user.user_email}!
-                    </span>
-                  )}
+                    {user && (
+                      <span className="username">
+                        Welcome, {user.user_email}!
+                      </span>
+                    )}
                   </div>
-                  
                 </form>
-
-               
               )}
             </div>
           )}
