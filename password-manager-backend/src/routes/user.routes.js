@@ -19,6 +19,12 @@ const routes = [
     method: 'POST',
     url: '/obtain-code',
     handler: userControllers.logicCode,
+  },
+  {
+    method: 'POST',
+    url: '/send-sms',
+    handler: userControllers.sendSMS,
   }
+
 ];
 module.exports = routes;

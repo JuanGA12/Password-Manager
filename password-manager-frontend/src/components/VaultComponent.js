@@ -14,6 +14,8 @@ const VaultComponent = ({ vault, user }) => {
   const [creatingVault, setCreatingVault] = useState();
   const [loader, setLoader] = useState(true);
   const [showPromp, setShowPromp] = useState(true);
+  const [editedIndex, setEditedIndex] = useState(null); // Estado para realizar un seguimiento del índice de elemento editado
+
   // const [master_password, setMasterPassword] = useState();
 
   const handleLogout = () => {
@@ -150,6 +152,11 @@ const VaultComponent = ({ vault, user }) => {
       console.log('Wrong master password', error);
     }
   };
+
+  const handleEdit = (index) => {
+    setEditedIndex(index); // Establecer el índice del elemento editado al hacer clic en el botón "Editar"
+  };
+
   return (
     <div>
       {loader && (
@@ -194,48 +201,73 @@ const VaultComponent = ({ vault, user }) => {
                   onSubmit={handleSubmit(onSubmit)}
                   style={{ backgroundColor: 'white', color: 'black' }}
                 >
-                  {fields.map((field, index) => {
-                    return (
-                      <div key={field.id} className={'vault'}>
-                        <div>
-                          <label htmlFor={'url'}>url</label>
-                          <input
-                            type={'url'}
-                            placeholder={'url'}
-                            {...register(`vault.${index}.url`, {
-                              required: 'url is required',
-                              maxLength: 40,
-                            })}
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor={'username'}>username</label>
-                          <input
-                            placeholder={'username'}
-                            {...register(`vault.${index}.username`, {
-                              required: 'username is required',
-                              maxLength: 40,
-                            })}
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor={'password'}>password</label>
-                          <input
-                            type="password"
-                            placeholder={'password'}
-                            {...register(`vault.${index}.password`, {
-                              required: 'password is required',
-                              maxLength: 40,
-                            })}
-                          />
-                        </div>
-                        <div className="button2" onClick={() => remove(index)}>
-                          Delete
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div style={{ display: 'flex' }}>
+                  <div style={{ height: '400px', overflowY: 'auto' }}>
+                    <ul>
+                      {fields.map((field, index) => (
+                        <li key={field.id}>
+                          <div className={'vault'}>
+                            <div>
+                              <label htmlFor={'url'}>url</label>
+                              <input
+                                type={'url'}
+                                placeholder={'url'}
+                                {...register(`vault.${index}.url`, {
+                                  required: 'url is required',
+                                  maxLength: 40,
+                                })}
+                              />
+                              {!editedIndex && (
+                                <div
+                                  className="button2"
+                                  onClick={() => handleEdit(index)}
+                                >
+                                  Editar
+                                </div>
+                              )}
+
+
+                              {editedIndex === index && (
+                                <div
+                                  className="button2"
+                                  onClick={() => remove(index)}
+                                >
+                                  Eliminar
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <label htmlFor={'username'}>username</label>
+                              <input
+                                placeholder={'username'}
+                                {...register(`vault.${index}.username`, {
+                                  required: 'username is required',
+                                  maxLength: 40,
+                                })}
+                              />
+                            </div>
+                            <div>
+                              <label htmlFor={'password'}>password</label>
+                              <input
+                                type="password"
+                                placeholder={'password'}
+                                {...register(`vault.${index}.password`, {
+                                  required: 'password is required',
+                                  maxLength: 40,
+                                })}
+                              />
+                            </div>
+                            <div
+                              className="button2"
+                              onClick={() => remove(index)}
+                            >
+                              Delete
+                            </div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="button-container">
                     <button
                       onClick={(e) => {
                         e.preventDefault();
@@ -245,11 +277,13 @@ const VaultComponent = ({ vault, user }) => {
                       Add
                     </button>
                     <button type="submit">Save vault</button>
+                    <button type="submit"> Edit </button>
+
                   </div>
                   <div className="logout-container">
                     <button onClick={() => handleLogout()}>Log Out</button>
                   </div>
-
+  
                   <div className="username-container">
                     {user && (
                       <span className="username">

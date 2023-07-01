@@ -263,3 +263,10 @@ input[type='submit'] {
   text-decoration: none;
   color: white; /* o cualquier otro color que desees */
 }
+
+
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}

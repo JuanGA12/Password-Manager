@@ -16,6 +16,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import 'react-tooltip/dist/react-tooltip.css';
 import { Tooltip } from 'react-tooltip';
 import { useRouter } from 'next/navigation';
+
+
+
 const FormComponent = ({ state, setState }) => {
   const { register, handleSubmit } = useForm();
   const [selectedColor, setSelectedColor] = useState('#000000');
@@ -30,7 +33,7 @@ const FormComponent = ({ state, setState }) => {
   const [showPasswordRecovery, setShowPasswordRecovery] = useState(false);
   const [recoveryEmail, setRecoveryEmail] = useState('');
   const router = useRouter();
-
+  
   const handlePasswordRecoveryClick = () => {
     setShowPasswordRecovery(true);
   };
@@ -150,9 +153,18 @@ const FormComponent = ({ state, setState }) => {
         method: 'POST',
         body: JSON.stringify(body),
       });
+
       if (!response.ok) {
         throw new Error('Network response was not OK');
       }
+
+
+      if(response.ok && route == 'loginuser' ){
+
+        router.push(`/code-twofa`);
+
+      }
+
       response = await response.json();
       console.log(response);
       Cookies.set(
@@ -203,13 +215,14 @@ const FormComponent = ({ state, setState }) => {
   );
   return (
     <div className="form">
+
       {!showPasswordRecovery ? (
         <>
           <h1>{state}</h1>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="input-container">
               <input
-                placeholder={'email'}
+                placeholder={'Email'}
                 {...register('email', { required: true, maxLength: 40 })}
                 className="input-field"
               />
@@ -220,7 +233,7 @@ const FormComponent = ({ state, setState }) => {
 
             <div className="input-container">
               <input
-                placeholder={'password'}
+                placeholder={'Password'}
                 type={showPassword ? 'text' : 'password'}
                 {...register('password', { required: true, maxLength: 20 })}
                 onChange={(e) => {
@@ -257,7 +270,7 @@ const FormComponent = ({ state, setState }) => {
               <>
                 <div className="input-container">
                   <input
-                    placeholder={'phone'}
+                    placeholder={'Phone Number'}
                     {...register('phone', { required: true, maxLength: 20 })}
                     onKeyPress={handlePhoneKeyPress}
                   />
@@ -268,7 +281,7 @@ const FormComponent = ({ state, setState }) => {
 
                 <div className="input-container">
                   <input
-                    placeholder="master password"
+                    placeholder="Master Password"
                     type={showPassword ? 'text' : 'password'}
                     value={masterPassword}
                     onChange={(e) => {
