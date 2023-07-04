@@ -5,85 +5,57 @@ const argon2 = require('argon2');
 //Funcion para recuperar password
 const nodemailer = require('nodemailer');
 
+const twilio = require('twilio')(
+  'AC5859d2c3ea5c5f7dfd2a020e96578a41',
+  'becb9c74bf6f0fd37fec63a2b2c2129cº'
+);
 
-
-const twilio = require('twilio')('AC5859d2c3ea5c5f7dfd2a020e96578a41','1a40898192907a4899533c1a847b186b');
-
-const { Vonage } = require('@vonage/server-sdk')
+const { Vonage } = require('@vonage/server-sdk');
 
 const vonage = new Vonage({
-  apiKey: "2b6ce7a0",
-  apiSecret: "xyvgixwn1XFefNxV"
-})
+  apiKey: '2b6ce7a0',
+  apiSecret: 'xyvgixwn1XFefNxV',
+});
 
-
-
-const sendSMS = async (phone, reply) => {
-  // Obtener el numero de celular
-
-  console.log(phone)
-
-  const codigo = generateCode();
-  console.log(codigo)
-  
-  
+const sendSMS = async (request, reply) => {
   try {
-    
-    const message = await twilio.messages.create({
-      from: "+18555012293",
-      //to: "+51945816007",
-      to: "+51" + phone,
-      body: 'Your verification code for password manager - chunte is: ' + codigo,
+    const { phone, codigo } = request.body;
+    // const message = await twilio.messages.create({
+    //   from: '+18555012293',
+    //   //to: "+51945816007",
+    //   to: '+51' + phone,
+    //   body:
+    //     'Your verification code for password manager - chunte is: ' + codigo,
+    // });
 
-    });
-
-    /*
     vonage.sms.send({
-      to : "51959163747", 
-      from :  "Vonage APIs", 
-      text : 'hola uwu',
-    }) */
-    
-    console.log('La función send2FA se ha ejecutado correctamente');
-    console.log('Mensaje enviado correctamente:');
-
-    return codigo;
-    //reply.code(200).send({ message: 'message sent successfully' });
-    
+      to: '51' + phone,
+      from: 'Vonage APIs',
+      text:
+        'Your verification code for password manager - chunte is: ' + codigo,
+    });
+    return reply.code(200).send({ message: 'SMS sent', status: 200 });
   } catch (error) {
-    console.error('Error sending message:', error);
-    //reply.code(500).send({ error: 'An error occurred while sending message' });
-    
+    logger.error('Error sending message:', error);
+    return reply.code(400).send({ message: 'Error sending sms', status: 400 });
   }
 };
 
-
-
 const sendPasswordRecoveryEmail = async (request, reply) => {
-  // Obtener la dirección de correo electrónico del cuerpo de la solicitud
-  const { email } = request.body;
   try {
-    // Lógica de generación del enlace de recuperación de contraseña
-    //const recoveryLink = generateRecoveryLink(email);
-    console.log(email);
-    
+    const { email } = request.body;
     const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
+      host: 'smtp.gmail.com',
       port: 465,
       secure: true,
       auth: {
         user: 'darklay77@gmail.com',
         pass: 'ubjxwiuykqhmatdk',
-      }
+      },
     });
 
-
     const codigo = generateCode();
-    console.log(codigo)
-    //Actulizo el codigo del usuario
     await User.updateOne({ email: email }, { code: codigo });
-
-
     const mailOptions = {
       from: '"Password Recovery" <darklay77@gmail.com>',
       to: email,
@@ -93,59 +65,32 @@ const sendPasswordRecoveryEmail = async (request, reply) => {
         <p>To complete this process, please put your code in the password recovery page:</p>
         <p><strong>${codigo}</strong></p> `,
     };
-
-    console.log("Cdigo luego de enviar el correo:")
-    console.log(codigo)
-
-    /*
-    if (!user) {
-      return reply.code(404).send({ error: 'User not found' });
-    }*/
-
-    //const updatedUser = await User.findOne({ email: email });
-    //const updatedCodigo = updatedUser.code;
-    //console.log(updatedCodigo);
+    console.log(codigo);
     await transporter.sendMail(mailOptions);
-    //console.log(request);
-
-
-    console.log('La función sendPasswordRecoveryEmail se ha ejecutado correctamente');
-    reply.code(200).send({ message: 'Password recovery email sent successfully' });
-    
+    return reply.code(200).send({
+      message: 'Password recovery email sent successfully',
+      status: 200,
+    });
   } catch (error) {
-    console.error('Error sending password recovery email:', error);
-    reply.code(500).send({ error: 'An error occurred while sending the password recovery email' });
-    
+    logger.error('Error sending password recovery email:', error);
+    return reply.code(400).send({
+      message: 'Error sending email',
+      status: 400,
+    });
   }
 };
 
-
 const generateCode = () => {
-
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let code = '';
-  
+
   for (let i = 0; i < 8; i++) {
     const randomIndex = Math.floor(Math.random() * characters.length);
     code += characters[randomIndex];
   }
-
-  //const timestamp = Date.now();
-
-  
-  //return {code, timestamp};
   return code;
 };
-
-
-const generateRecoveryLink = (email) => {
-
-
-  
-  return `link`;
-};
-
-
 
 const createUser = async (request, reply) => {
   try {
@@ -160,20 +105,25 @@ const createUser = async (request, reply) => {
     });
     if (vault) {
       return reply.code(200).send({
+        user_phone: user.phone,
         user_id: user._id,
         user_email: user.email,
-        user_pass: user.password,
         vault_data: vault.data,
-        user_vault: user.hasVault,
         vault_nonce: vault.nonce,
         vault_mac: vault.mac,
+        message: 'User created successfully',
+        status: 200,
       });
     }
     logger.error('error creating user');
-    return reply.code(401).send({ message: 'Error' });
+    return reply
+      .code(400)
+      .send({ message: 'Error creating user', status: 400 });
   } catch (err) {
     logger.error(err, 'error creating user');
-    reply.code(401).send(err);
+    return reply
+      .code(400)
+      .send({ message: 'Error creating user', status: 400 });
   }
 };
 
@@ -182,19 +132,14 @@ const loginUser = async (request, reply) => {
     const { email, password } = JSON.parse(request.body);
     const user = await User.findOne({ email: email });
     const verified = await argon2.verify(user.password, password);
-    
-    
+
     if (!user || !verified) {
       logger.error('error login user');
-      return reply.status(401).send({
+      return reply.status(400).send({
         message: 'Invalid email or password',
+        status: 400,
       });
     }
-
-
-
-    const codigo = sendSMS(user.phone,reply);
-    //Enviar el codigo front para compararlo
 
     const vault = await vaultControllers.findVault({
       user_id: user._id,
@@ -202,51 +147,93 @@ const loginUser = async (request, reply) => {
 
     if (!vault) {
       logger.error('error finding vault');
-      return reply.status(401).send({
-        message: 'Error finding vault by user_id',
+      return reply.status(400).send({
+        message: 'Error finding vault',
+        status: 400,
       });
     }
 
     return reply.code(200).send({
+      user_phone: user.phone,
       user_id: user._id,
       user_email: user.email,
-      user_pass: user.password,
       vault_data: vault.data,
-      user_vault: user.hasVault,
       vault_nonce: vault.nonce,
       vault_mac: vault.mac,
+      message: 'User logged in',
+      status: 200,
     });
   } catch (err) {
     logger.error(err, 'error login user');
-    return reply.code(401).send(err);
+    return reply.code(400).send(err);
   }
 };
 
-const logicCode = async (request, reply) => {
+const obtainCode = async (request, reply) => {
   try {
-
-    console.log("Ingrese a email")
-    const {email} = request.body;
-    console.log("Ingrese a email")
-    console.log(email)
+    const { email } = request.body;
     const user = await User.findOne({ email: email });
-    console.log("Imprimiendo el code del usuario")
-    console.log(user.code)
-
-    return reply.code(200).send({
-      user_code: user.code,     
-    });
-    
+    if (user.code != '') {
+      return reply.code(200).send({
+        user_code: user.code,
+        message: 'Code generated',
+        status: 200,
+      });
+    }
+    return reply.code(400).send({ message: 'No code generated', status: 400 });
   } catch (err) {
     logger.error(err, 'error obtain code');
-    return reply.code(401).send(err);
+    return reply.code(400).send({ message: 'No code generated', status: 400 });
   }
 };
 
+const updateUser = async (request, reply) => {
+  try {
+    const body = request.body;
+    const passHashed = await argon2.hash(body.password);
+    await User.updateOne({ email: body.email }, { password: passHashed });
+    return reply.code(200).send({ message: 'Password updated', status: 200 });
+  } catch (err) {
+    logger.error(err, 'error updating password');
+    return reply
+      .code(400)
+      .send({ message: 'Error updating password', status: 400 });
+  }
+};
+const resetCode = async (request, reply) => {
+  try {
+    const { email } = request.body;
+    await User.updateOne({ email: email }, { code: '' });
+    return reply.code(200).send({ message: 'Code reseted', status: 200 });
+  } catch (err) {
+    logger.error(err, 'error reseting code');
+    return reply
+      .code(400)
+      .send({ message: 'Error reseting code', status: 400 });
+  }
+};
+
+const resetCodeAfterTime = async (request, reply) => {
+  try {
+    const { email } = request.body;
+    setTimeout(async () => {
+      await User.updateOne({ email: email }, { code: '' });
+      logger.info('codigo actualizado despues de un tiempo');
+    }, 60000);
+  } catch (err) {
+    logger.error(err, 'Error reseting code after time');
+    return reply
+      .code(400)
+      .send({ message: 'Error reseting code after time', status: 400 });
+  }
+};
 module.exports = {
   createUser,
   loginUser,
   sendPasswordRecoveryEmail,
-  logicCode,
+  obtainCode,
   sendSMS,
+  updateUser,
+  resetCode,
+  resetCodeAfterTime,
 };

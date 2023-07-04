@@ -1,6 +1,5 @@
 const Vault = require('../models/vault.model.js');
 const logger = require('../utils/logger.js');
-const User = require('../models/user.model.js');
 
 const createVault = async (body) => {
   try {
@@ -21,11 +20,12 @@ const updateVault = async (request, reply) => {
       { user: body.user_id },
       { data: body.data, nonce: body.nonce, mac: body.mac }
     );
-    await User.updateOne({ _id: body.user_id }, { hasVault: true });
-    return reply.code(200).send({ message: 'Vault updated' });
+    return reply.code(200).send({ message: 'Vault updated', status: 200 });
   } catch (err) {
     logger.error(err, 'error updating vault');
-    return reply.code(401).send(err);
+    return reply
+      .code(400)
+      .send({ message: 'Error updating vault', status: 400 });
   }
 };
 

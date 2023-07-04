@@ -1,10 +1,8 @@
 import pbkdf2 from 'crypto-js/pbkdf2';
 import lib from 'crypto-js/lib-typedarrays';
-import SHA256 from 'crypto-js/sha256';
 
-export const generateMasterPassword = (email, password) => {
-  const salt = lib.random(128 / 8);
-  return pbkdf2(`${email}:${password}`, salt, {
+export const generateMasterPassword = (password, color, email) => {
+  return pbkdf2(`${password}:${color}`, email, {
     keySize: 128 / 32,
   }).toString();
 };

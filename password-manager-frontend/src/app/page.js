@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
 import { BallTriangle } from 'react-loader-spinner';
 import VaultComponent from '@/components/VaultComponent';
-
+import './globals.css';
 
 export default function Home() {
   const [state, setState] = useState('Login');
@@ -51,7 +51,6 @@ export default function Home() {
           {state == 'Vault' && <VaultComponent vault={vault} user={user} />}
         </div>
       )}
-      
     </main>
   );
 }

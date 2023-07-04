@@ -5,7 +5,10 @@ main {
   width: 100vw;
   height: 100vh;
   background: #0e101c;
-  /*overflow-y: scroll;*/ 
+  /*overflow-y: scroll;*/
+}
+.Toastify__toast-body {
+  width: 1000px !important;
 }
 body {
   margin: 0;
@@ -15,11 +18,8 @@ body {
   width: 100vw;
   height: 100vh;
   background: #0e101c;
-  /*overflow-y: scroll;*/ 
+  /*overflow-y: scroll;*/
 }
-
-
-
 
 .form {
   border: 3px solid;
@@ -29,8 +29,8 @@ body {
   width: 300px;
   overflow: auto;
   max-height: 80vh;
-  scrollbar-width: thin; 
-  scrollbar-color: #ec5990 #0e101c; 
+  scrollbar-width: thin;
+  scrollbar-color: #ec5990 #0e101c;
 
   &::-webkit-scrollbar-track {
     background: #0e101c;
@@ -40,9 +40,7 @@ body {
     background-color: #ec5990;
     border-radius: 6px;
     border: 3px solid #0e101c;
-
   }
-
 }
 
 .form::-webkit-scrollbar {
@@ -58,7 +56,6 @@ body {
   border-radius: 6px;
   border: 3px solid #0e101c;
 }
-
 
 button[type='button'] {
   background: black;
@@ -153,6 +150,8 @@ input[type='submit'] {
   display: flex;
   /* border: 1px solid black; */
   padding: 10px;
+  width: 750px;
+  justify-content: center;
 }
 #EnterPass {
   background: #ec5990;
@@ -169,20 +168,21 @@ input[type='submit'] {
   cursor: pointer;
 }
 
-
 .button2 {
+  margin-left: 5px;
   background: #ec5990;
   color: white;
   text-transform: uppercase;
   border: none;
-  margin-top: 40px;
+  margin-top: 65px;
   padding: 10px 10px;
-  font-size: 16px;
+  font-size: 10px;
   font-weight: 100;
   display: block;
   appearance: none;
   border-radius: 4px;
   cursor: pointer;
+  height: 10px;
 }
 
 .logout-container {
@@ -199,21 +199,20 @@ input[type='submit'] {
 
 .input-field {
   flex: 1;
-  padding-right: 30px; 
+  padding-right: 30px;
 }
 
 .input-icon {
-  margin-left: 10px; 
+  margin-left: 10px;
 }
 
 .color-picker-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 300px; 
-  margin: 0 auto; 
+  max-width: 300px;
+  margin: 0 auto;
 }
-
 
 .username-container {
   position: absolute;
@@ -227,7 +226,6 @@ input[type='submit'] {
   font-size: 16px;
 }
 
-
 .custom-toast-close-button {
   background-color: #fff;
   color: #000;
@@ -237,7 +235,6 @@ input[type='submit'] {
   cursor: pointer;
   outline: none;
 }
-
 
 .help-icon-container {
   position: fixed;
@@ -249,21 +246,18 @@ input[type='submit'] {
   z-index: 9999;
 }
 
-
 .forgot-password-link {
-  color: blue; 
-  text-decoration: underline;
+  /* color: blue;  */
+  /* text-decoration: underline; */
   cursor: pointer;
-  font-size: 14px; 
+  font-size: 14px;
   font-style: italic;
-
 }
 
 .custom-link {
   text-decoration: none;
   color: white; /* o cualquier otro color que desees */
 }
-
 
 .button-container {
   display: flex;

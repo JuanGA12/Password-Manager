@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import Cookies from 'js-cookie';
+import { SketchPicker } from 'react-color';
+import { ToastContainer, toast, Slide } from 'react-toastify';
 import {
   arrayBufferToBase64,
   decryptVault,
@@ -10,63 +12,45 @@ import {
 import { BallTriangle } from 'react-loader-spinner';
 
 const VaultComponent = ({ vault, user }) => {
-  const [validMP, setValidMP] = useState();
-  const [creatingVault, setCreatingVault] = useState();
+  const [selectedColor, setSelectedColor] = useState('#fff');
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [masterPassword, setMasterPassword] = useState();
   const [loader, setLoader] = useState(true);
   const [showPromp, setShowPromp] = useState(true);
-  const [editedIndex, setEditedIndex] = useState(null); // Estado para realizar un seguimiento del índice de elemento editado
-
-  // const [master_password, setMasterPassword] = useState();
+  const CustomToastCloseButton = ({ closeToast }) => (
+    <button onClick={closeToast} className="custom-toast-close-button">
+      OK
+    </button>
+  );
 
   const handleLogout = () => {
-    // Eliminar las cookies de usuario y vault
-    console.log('Se elimianron la cookies');
     Cookies.remove('u');
     Cookies.remove('v');
-
-    // Recargar la página
     location.reload();
   };
 
-  useEffect(() => {
-    if (user) {
-      setCreatingVault(user.user_vault);
-      if (!user.user_vault) {
-        setValidMP(generateMasterPassword(user.user_email, user.user_pass));
-      }
-    }
-  }, [user]);
   useEffect(() => {
     console.log(vault);
   }, [vault]);
 
   const onSubmit = async (data) => {
     try {
-      // const master_password = generateMasterPassword(
-      //   user.email,
-      //   user.user_pass
-      // );
-      let nonce_ = '';
       const vault_ = JSON.parse(Cookies.get('v'));
+      const nonce_ = vault_.vault_nonce;
 
-      if (vault_.vault_nonce != '') {
-        nonce_ = vault_.vault_nonce;
-      } else
-        nonce_ = arrayBufferToBase64(
-          crypto.getRandomValues(new Uint8Array(12))
-        );
-      // console.log('nonce', nonce_);
-      // console.log('validMP', validMP);
-
+      const secret = generateMasterPassword(
+        masterPassword,
+        selectedColor,
+        user.user_email
+      );
       const { encrypted, nonce, mac } = await encryptVault(
         JSON.stringify(data.vault),
-        // master_password
-        validMP,
+        secret,
         nonce_
       );
 
-      console.log('mp', validMP, 'nonce', nonce_);
-      let response = await fetch('http://localhost:4000/updatevault', {
+      console.log('mp', secret, 'nonce', nonce_);
+      const response = await fetch('http://localhost:4000/updatevault', {
         method: 'PUT',
         body: JSON.stringify({
           data: encrypted,
@@ -75,16 +59,21 @@ const VaultComponent = ({ vault, user }) => {
           mac: mac,
         }),
       });
+      const responseData = await response.json();
       if (!response.ok) {
-        throw new Error('Network response was not OK');
+        toast.error(responseData.message, {
+          autoClose: 3000,
+        });
+        throw new Error(responseData.message);
       }
-      response = await response.json();
+
       Cookies.remove('v');
       Cookies.set(
         'v',
         JSON.stringify({
           vault_data: encrypted,
           vault_nonce: nonce,
+          vault_mac: mac,
         }),
         { expires: 7 }
       );
@@ -95,17 +84,23 @@ const VaultComponent = ({ vault, user }) => {
         JSON.stringify({
           user_id: user_.user_id,
           user_email: user_.user_email,
-          user_pass: user_.user_pass,
-          user_vault: true,
+          user_phone: user_.user_phone,
         }),
         { expires: 7 }
       );
-      //se creo vault
+      if (responseData.status === 200) {
+        toast.success(responseData.message, {
+          autoClose: 3000,
+        });
+      }
     } catch (error) {
       console.error(
         'There has been a problem with your fetch operation:',
         error
       );
+      toast.error(error, {
+        autoClose: 3000,
+      });
     }
   };
 
@@ -125,36 +120,52 @@ const VaultComponent = ({ vault, user }) => {
   }, [loader]);
   const handleInputChange = (e) => {
     const { value } = e.target;
-    setValidMP(value);
+    setMasterPassword(value);
   };
   const checkDecrypt = async () => {
     try {
+      const secret = generateMasterPassword(
+        masterPassword,
+        selectedColor,
+        user.user_email
+      );
       const vault_ = JSON.parse(Cookies.get('v'));
       console.log('VD', vault_.vault_data);
-      console.log('VMP', validMP);
+      console.log('VMP', secret);
       console.log('Nonce', vault_.vault_nonce);
 
       const plaintext = await decryptVault(
         vault_.vault_data,
-        validMP,
+        secret,
         vault_.vault_nonce
       );
-      console.log(JSON.parse(plaintext));
-      JSON.parse(plaintext).map((ele, idx) => {
+      console.log(plaintext);
+      if (plaintext == '') {
         append({
-          url: ele.url,
-          username: ele.username,
-          password: ele.password,
+          url: '',
+          username: '',
+          password: '',
         });
+      }
+      if (plaintext != '') {
+        JSON.parse(plaintext).map((ele, idx) => {
+          append({
+            url: ele.url,
+            username: ele.username,
+            password: ele.password,
+          });
+        });
+      }
+      toast.success('Vault decrypted!', {
+        autoClose: 3000,
       });
       setShowPromp(false);
     } catch (error) {
-      console.log('Wrong master password', error);
+      console.log('Error decrypting vault', error);
+      toast.error('Error decrypting vault', {
+        autoClose: 3000,
+      });
     }
-  };
-
-  const handleEdit = (index) => {
-    setEditedIndex(index); // Establecer el índice del elemento editado al hacer clic en el botón "Editar"
   };
 
   return (
@@ -173,130 +184,140 @@ const VaultComponent = ({ vault, user }) => {
       )}
       {!loader && (
         <div>
-          {!creatingVault && (
-            <div>
-              <button onClick={() => setCreatingVault(true)}>
-                Create vault
-              </button>
-            </div>
-          )}
-          {creatingVault && (
-            <div>
-              {showPromp && vault.length > 0 ? (
-                <div style={{ backgroundColor: 'white', width: '400px' }}>
-                  <input
-                    placeholder="Enter your master password"
-                    onChange={(e) => handleInputChange(e)}
-                  ></input>
-                  <div
-                    id="EnterPass"
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => checkDecrypt()}
-                  >
-                    Enter
-                  </div>
-                </div>
-              ) : (
-                <form
-                  onSubmit={handleSubmit(onSubmit)}
-                  style={{ backgroundColor: 'white', color: 'black' }}
+          {showPromp && vault.length > 0 ? (
+            <div style={{ backgroundColor: 'white', width: '400px' }}>
+              <input
+                placeholder="Enter your master password"
+                onChange={(e) => handleInputChange(e)}
+              ></input>
+              <div className="color-picker-container">
+                <label>Selecciona tu color</label>
+                <div
+                  style={{
+                    padding: '5px',
+                    background: '#fff',
+                    borderRadius: '1px',
+                    boxShadow: '0 0 0 1px rgba(0,0,0,.1)',
+                    display: 'inline-block',
+                    cursor: 'pointer',
+                    marginBottom: '1rem',
+                  }}
+                  onClick={() => setShowColorPicker(!showColorPicker)}
                 >
-                  <div style={{ height: '400px', overflowY: 'auto' }}>
-                    <ul>
-                      {fields.map((field, index) => (
-                        <li key={field.id}>
-                          <div className={'vault'}>
-                            <div>
-                              <label htmlFor={'url'}>url</label>
-                              <input
-                                type={'url'}
-                                placeholder={'url'}
-                                {...register(`vault.${index}.url`, {
-                                  required: 'url is required',
-                                  maxLength: 40,
-                                })}
-                              />
-                              {!editedIndex && (
-                                <div
-                                  className="button2"
-                                  onClick={() => handleEdit(index)}
-                                >
-                                  Editar
-                                </div>
-                              )}
-
-
-                              {editedIndex === index && (
-                                <div
-                                  className="button2"
-                                  onClick={() => remove(index)}
-                                >
-                                  Eliminar
-                                </div>
-                              )}
-                            </div>
-                            <div>
-                              <label htmlFor={'username'}>username</label>
-                              <input
-                                placeholder={'username'}
-                                {...register(`vault.${index}.username`, {
-                                  required: 'username is required',
-                                  maxLength: 40,
-                                })}
-                              />
-                            </div>
-                            <div>
-                              <label htmlFor={'password'}>password</label>
-                              <input
-                                type="password"
-                                placeholder={'password'}
-                                {...register(`vault.${index}.password`, {
-                                  required: 'password is required',
-                                  maxLength: 40,
-                                })}
-                              />
-                            </div>
-                            <div
-                              className="button2"
-                              onClick={() => remove(index)}
-                            >
-                              Delete
-                            </div>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="button-container">
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        append({ url: '', username: '', password: '' });
-                      }}
-                    >
-                      Add
-                    </button>
-                    <button type="submit">Save vault</button>
-                    <button type="submit"> Edit </button>
-
-                  </div>
-                  <div className="logout-container">
-                    <button onClick={() => handleLogout()}>Log Out</button>
-                  </div>
-  
-                  <div className="username-container">
-                    {user && (
-                      <span className="username">
-                        Welcome, {user.user_email}!
-                      </span>
-                    )}
-                  </div>
-                </form>
-              )}
+                  <div
+                    style={{
+                      width: '36px',
+                      height: '14px',
+                      borderRadius: '2px',
+                      backgroundColor: selectedColor,
+                    }}
+                  />
+                </div>
+                {showColorPicker && (
+                  <SketchPicker
+                    color={selectedColor}
+                    onChange={(color) => setSelectedColor(color.hex)}
+                  />
+                )}
+              </div>
+              <div
+                id="EnterPass"
+                style={{ cursor: 'pointer' }}
+                onClick={() => checkDecrypt()}
+              >
+                Enter
+              </div>
             </div>
+          ) : (
+            <>
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                style={{
+                  backgroundColor: 'white',
+                  color: 'black',
+                  width: '800px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  flexDirection: 'column',
+                  borderRadius: '10px',
+                }}
+              >
+                {fields.map((field, index) => {
+                  return (
+                    <div key={field.id} className={'vault'}>
+                      <div>
+                        <label htmlFor={'url'}>url</label>
+                        <input
+                          type={'url'}
+                          placeholder={'url'}
+                          {...register(`vault.${index}.url`, {
+                            required: 'url is required',
+                            maxLength: 40,
+                          })}
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor={'username'}>username</label>
+                        <input
+                          placeholder={'username'}
+                          {...register(`vault.${index}.username`, {
+                            required: 'username is required',
+                            maxLength: 40,
+                          })}
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor={'password'}>password</label>
+                        <input
+                          // type="password"
+                          placeholder={'password'}
+                          {...register(`vault.${index}.password`, {
+                            required: 'password is required',
+                            maxLength: 40,
+                          })}
+                        />
+                      </div>
+                      <div className="button2" onClick={() => remove(index)}>
+                        Delete
+                      </div>
+                    </div>
+                  );
+                })}
+                <div style={{ display: 'flex', width: '500px' }}>
+                  <button
+                    style={{ marginRight: '10px' }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      append({ url: '', username: '', password: '' });
+                    }}
+                  >
+                    Add
+                  </button>
+                  <button style={{ marginLeft: '10px' }} type="submit">
+                    Save vault
+                  </button>
+                </div>
+              </form>
+              <div className="logout-container">
+                <button onClick={() => handleLogout()}>Log Out</button>
+              </div>
+              <div className="username-container">
+                {user && (
+                  <span className="username">Welcome, {user.user_email}!</span>
+                )}
+              </div>
+            </>
           )}
         </div>
       )}
+      <ToastContainer
+        position="top-right"
+        transition={Slide}
+        draggable={false}
+        closeButton={<CustomToastCloseButton />}
+        toastClassName="custom-toast"
+      />
     </div>
   );
 };
