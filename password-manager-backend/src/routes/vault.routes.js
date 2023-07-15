@@ -5,5 +5,10 @@ const routes = [
     url: '/updatevault',
     handler: vaultControllers.updateVault,
   },
+  {
+    method: 'POST',
+    url: '/getVault',
+    handler: vaultControllers.getVault,
+  }  
 ];
 module.exports = routes;

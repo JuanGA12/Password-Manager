@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form';
 import Cookies from 'js-cookie';
 import { SketchPicker } from 'react-color';
 import PasswordStrengthBar from 'react-password-strength-bar';
-import { useState } from 'react';
+import { useEffect ,useState } from 'react';
 import { FaEye, FaEyeSlash, FaEnvelope, FaPhone } from 'react-icons/fa';
 import { ToastContainer, toast, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -27,6 +27,16 @@ const FormComponent = ({ state, setState }) => {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [userPhone, setUserPhone] = useState();
   const [responseData, setResponse] = useState();
+  const [encryptedData, setencryptedData] = useState('');
+  useEffect(() => {
+    console.log('hola1')
+    if(encryptedData != '')
+    {
+      console.log('hola2')
+      localStorage.setItem('encryptedData_' + JSON.parse(Cookies.get('u')).user_id, encryptedData);
+      setState('Vault');
+    }
+    }, [encryptedData]);
   const router = useRouter();
   const PasswordRecoverySubmit = async (data) => {
     try {
@@ -158,10 +168,12 @@ const FormComponent = ({ state, setState }) => {
           }),
           { expires: 7 }
         );
+        console.log(encrypted)
+        setencryptedData(encrypted)
         toast.success(responseData.message, {
           autoClose: 3000,
         });
-        setState('Vault');
+        //setState('Vault');
       }
     } catch (error) {
       console.error(
@@ -188,6 +200,7 @@ const FormComponent = ({ state, setState }) => {
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="input-container">
               <input
+                type= {'email'}
                 placeholder={'Email'}
                 {...register('email', { required: true, maxLength: 40 })}
                 className="input-field"
@@ -236,6 +249,7 @@ const FormComponent = ({ state, setState }) => {
               <>
                 <div className="input-container">
                   <input
+                    type={'number'}
                     placeholder={'Phone Number'}
                     {...register('phone', { required: true, maxLength: 20 })}
                     // onKeyPress={handlePhoneKeyPress}

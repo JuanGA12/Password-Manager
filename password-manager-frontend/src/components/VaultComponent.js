@@ -3,11 +3,14 @@ import { useFieldArray, useForm } from 'react-hook-form';
 import Cookies from 'js-cookie';
 import { SketchPicker } from 'react-color';
 import { ToastContainer, toast, Slide } from 'react-toastify';
+import { FaEye, FaEyeSlash, FaEnvelope, FaPhone } from 'react-icons/fa';
 import {
+  base64ToArrayBuffer,
   arrayBufferToBase64,
   decryptVault,
   encryptVault,
   generateMasterPassword,
+  decoder
 } from '@/utils/crypto';
 import { BallTriangle } from 'react-loader-spinner';
 
@@ -17,6 +20,15 @@ const VaultComponent = ({ vault, user }) => {
   const [masterPassword, setMasterPassword] = useState();
   const [loader, setLoader] = useState(true);
   const [showPromp, setShowPromp] = useState(true);
+  const [encryptedData, setencryptedData] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    if(encryptedData != '')
+    {
+      localStorage.setItem('encryptedData_' + JSON.parse(Cookies.get('u')).user_id, encryptedData);
+    }
+    }, [encryptedData]);
   const CustomToastCloseButton = ({ closeToast }) => (
     <button onClick={closeToast} className="custom-toast-close-button">
       OK
@@ -48,7 +60,8 @@ const VaultComponent = ({ vault, user }) => {
         secret,
         nonce_
       );
-
+      setencryptedData(encrypted)
+      
       console.log('mp', secret, 'nonce', nonce_);
       const response = await fetch('http://localhost:4000/updatevault', {
         method: 'PUT',
@@ -129,6 +142,29 @@ const VaultComponent = ({ vault, user }) => {
         selectedColor,
         user.user_email
       );
+          
+      var uid = JSON.parse(Cookies.get('u')).user_id
+      let body = {user_id: uid}
+      console.log(uid)
+      console.log(body)
+      const response = await fetch(`http://localhost:4000/getVault`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      var responsedata = await response.json()
+      var bd_mac = responsedata.vault.mac
+      bd_mac = base64ToArrayBuffer(bd_mac)
+      //COMPARAR CON LOCALSTORAGE Y VERIFICAR INTEGRIDAD
+      
+      var local_vault = localStorage.getItem('encryptedData_' + uid)
+      var local_mac = base64ToArrayBuffer(local_vault).slice(base64ToArrayBuffer(local_vault).byteLength - 16)
+      bd_mac = decoder.decode(new Uint8Array(bd_mac))
+      local_mac = decoder.decode(new Uint8Array(local_mac))
+      if(bd_mac == local_mac)
+      {
       const vault_ = JSON.parse(Cookies.get('v'));
       console.log('VD', vault_.vault_data);
       console.log('VMP', secret);
@@ -160,6 +196,42 @@ const VaultComponent = ({ vault, user }) => {
         autoClose: 3000,
       });
       setShowPromp(false);
+    }
+    else
+    {
+      console.log('HOLA');
+      toast.error('Integrity error: there was corrupted data in the server, you will see the last stable version of your passwords.', {
+        autoClose: 3000,
+      });
+      const vault_ = JSON.parse(Cookies.get('v'));
+      console.log('VD', vault_.vault_data);
+      console.log('VMP', secret);
+      console.log('Nonce', vault_.vault_nonce);
+
+      const plaintext = await decryptVault(
+        localStorage.getItem('encryptedData_' + uid),
+        secret,
+        vault_.vault_nonce
+      );
+      console.log(plaintext);
+      if (plaintext == '') {
+        append({
+          url: '',
+          username: '',
+          password: '',
+        });
+      }
+      if (plaintext != '') {
+        JSON.parse(plaintext).map((ele, idx) => {
+          append({
+            url: ele.url,
+            username: ele.username,
+            password: ele.password,
+          });
+        });
+      }
+      setShowPromp(false);
+    }
     } catch (error) {
       console.log('Error decrypting vault', error);
       toast.error('Error decrypting vault', {
@@ -186,10 +258,21 @@ const VaultComponent = ({ vault, user }) => {
         <div>
           {showPromp && vault.length > 0 ? (
             <div style={{ backgroundColor: 'white', width: '400px' }}>
+              <div className='input-container'>
               <input
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your master password"
                 onChange={(e) => handleInputChange(e)}
               ></input>
+              <div className="input-icon">
+                    <div
+                      className="password-icon"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <FaEye /> : <FaEyeSlash />}
+                    </div>
+                  </div>
+                </div>
               <div className="color-picker-container">
                 <label>Selecciona tu color</label>
                 <div
@@ -247,12 +330,11 @@ const VaultComponent = ({ vault, user }) => {
                   return (
                     <div key={field.id} className={'vault'}>
                       <div>
-                        <label htmlFor={'url'}>url</label>
+                        <label htmlFor={'url'}>Aplicación</label>
                         <input
-                          type={'url'}
-                          placeholder={'url'}
+                          placeholder={'Aplicación'}
                           {...register(`vault.${index}.url`, {
-                            required: 'url is required',
+                            required: 'Aplicación is required',
                             maxLength: 40,
                           })}
                         />

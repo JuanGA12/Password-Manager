@@ -42,8 +42,22 @@ const findVault = async (body) => {
     return null;
   }
 };
+
+const getVault = async (request, reply) => {
+  try {
+    const {user_id} = request.body
+    const vault = await Vault.findOne({ user: user_id });
+    console.log(user_id)
+    return reply.code(200).send({ vault: vault, status: 200 });
+  } catch (error) {
+    logger.error(error, 'error finding vault');
+    return reply.code(400).send({ vault: 'Error finding vault', status: 400 });
+  }
+};
+
 module.exports = {
   createVault,
   updateVault,
   findVault,
+  getVault,
 };

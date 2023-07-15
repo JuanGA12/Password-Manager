@@ -1,5 +1,11 @@
 import pbkdf2 from 'crypto-js/pbkdf2';
 import lib from 'crypto-js/lib-typedarrays';
+import { useEffect, useState } from 'react';
+
+export const decoder = new TextDecoder("utf-8");
+
+
+
 
 export const generateMasterPassword = (password, color, email) => {
   return pbkdf2(`${password}:${color}`, email, {
@@ -56,13 +62,16 @@ export const encryptVault = async (plaintext, master_password, nonce) => {
     encrypted.slice(0, encrypted.byteLength - 16),
     encrypted.slice(encrypted.byteLength - 16),
   ];
-  console.log('cypher', arrayBufferToBase64(value));
-  console.log('mac', arrayBufferToBase64(auth_tag));
 
   // Buffer to base 64
   const binary = arrayBufferToBase64(encrypted);
-  // console.log('bin', binary);
-  // console.log('non', arrayBufferToBase64(nonce));
+
+  //const hola1 = base64ToArrayBuffer(binary).slice(base64ToArrayBuffer(binary).byteLength - 16)
+  const hola1 = base64ToArrayBuffer(binary)
+  const hola2 = base64ToArrayBuffer(arrayBufferToBase64(auth_tag))
+  console.log(decoder.decode(new Uint8Array(hola1)))
+  console.log(decoder.decode(new Uint8Array(hola2)))
+
   return {
     encrypted: binary,
     nonce: arrayBufferToBase64(nonce),
